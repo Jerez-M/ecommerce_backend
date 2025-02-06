@@ -23,7 +23,7 @@ class OrderItemRetrieveSerializer(ModelSerializer):
 
 
 class MinimizedOrderItemRetrieveSerializer(ModelSerializer):
-    product = MinimizedProductRetrieveSerializer()
+    # product = MinimizedProductRetrieveSerializer()
 
     class Meta:
         model = OrderItem
@@ -51,7 +51,7 @@ class OrderSerializer(ModelSerializer):
 
 
 class OrderRetrieveSerializer(ModelSerializer):
-    order_items = MinimizedOrderItemRetrieveSerializer()
+    # order_items = MinimizedOrderItemRetrieveSerializer()
     user = MinimizedUserSerializer()
 
     class Meta:

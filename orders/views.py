@@ -79,7 +79,7 @@ class GetOrderItemsByProductId(GenericAPIView):
         try:
             Product.objects.get(pk=product_id)
         except Product.DoesNotExist:
-            return Response("Product does not exist", status=status.HTTP_404)
+            return Response("Product does not exist", status=status.HTTP_404_NOT_FOUND)
         else:
             OrderItems = OrderItem.objects.filter(product_id=product_id)
             serializer = OrderItemRetrieveSerializer(OrderItems, many=True)
@@ -150,7 +150,7 @@ class GetOrdersByUserId(GenericAPIView):
         try:
             OrderItem.objects.get(pk=user_id)
         except Product.DoesNotExist:
-            return Response("User does not exist", status=status.HTTP_404)
+            return Response("User does not exist", status=status.HTTP_404_NOT_FOUND)
         else:
             Orders = Order.objects.filter(user_id=user_id)
             serializer = OrderRetrieveSerializer(Orders, many=True)
@@ -166,8 +166,8 @@ class GetOrdersByOrderItemId(GenericAPIView):
         try:
             OrderItem.objects.get(pk=order_item_id)
         except Product.DoesNotExist:
-            return Response("Product does not exist", status=status.HTTP_404)
+            return Response("Product does not exist", status=status.HTTP_404_NOT_FOUND)
         else:
-            Orders = Order.objects.filter(order_item_id=order_item_id)
+            Orders = Order.objects.filter(order_items=order_item_id)
             serializer = OrderRetrieveSerializer(Orders, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
