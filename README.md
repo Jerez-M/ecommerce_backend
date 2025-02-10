@@ -8,7 +8,7 @@ Installation
 Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/ecommerce-api.git
+git clone https://github.com/Jerez-M/ecommerce_backend.git
 cd ecommerce-api
 ```
 
