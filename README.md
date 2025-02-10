@@ -30,9 +30,9 @@ Set up database:
     Use the sqlite3 db which already contains the test data.
     alternative: If you don’t want to use my db.sqlite3, you can create your own db and then import the test data that i put in data.json file. use the command below to import it into your databbase.
 
-    ```bash
-    python manage.py loaddata data.json
-    ```
+```bash
+python manage.py loaddata data.json
+```
 
 Run migrations:
 
@@ -114,7 +114,6 @@ sudo nano /etc/systemd/system/gunicorn.service
 
 Add the following content:
 
-    ```ini
     [Unit]
     Description=gunicorn daemon
     After=network.target
@@ -127,7 +126,7 @@ Add the following content:
 
     [Install]
     WantedBy=multi-user.target
-    ```
+
 
 Start and enable the Gunicorn service:
 
