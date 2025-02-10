@@ -1,270 +1,185 @@
-E-Commerce Platform RESTful API
-Overview
+# E-Commerce Platform RESTful API
 
-This project is a highly scalable and secure RESTful API for a fictional e-commerce platform. It includes advanced features, complex business logic, and stringent performance requirements. The API is built using Django and PostgreSQL, with additional features like real-time notifications and deployment instructions for AWS Lightsail.
-Features
-
-    User Authentication: Register, login, and retrieve user profile data using JWT tokens.
-
-    Product Management: CRUD operations for products, including image uploads and search functionality.
-
-    Order Processing: Create, retrieve, and update orders with transactional integrity.
-
-    Reviews: Add, retrieve, and rate reviews for products.
-
-    Business Logic: Discount mechanisms, inventory management, and handling race conditions.
-
-    Security: Input validation, authentication middleware, and rate limiting.
-
-    Performance Optimization: Caching, optimized database queries, pagination, and filtering.
-
-    Testing: Unit and integration tests with coverage reports.
-
-    Real-time Features: WebSocket communication for real-time notifications.
-
-    Analytics Dashboard: Simple admin dashboard displaying sales, active users, and product views.
-
-    Deployment: Guide for deploying to AWS Lightsail and setting up CI/CD pipelines.
-
-Prerequisites
-
-    Python 3.8+
-
-    PostgreSQL 12
-
-    Redis
-
-    Node.js (for the analytics dashboard)
-
-    AWS Lightsail account
-
+The E-Commerce Platform RESTful API is a highly scalable and secure API built using Django and PostgreSQL. It supports advanced features such as user authentication, product management, order processing, reviews, and real-time notifications. The project also includes an analytics dashboard and deployment instructions for AWS Lightsail.
 Installation
 
-    Clone the repository:
-    bash
-    Copy
+## Use the following steps to set up the project locally.
 
-    git clone https://github.com/yourusername/ecommerce-api.git
-    cd ecommerce-api
+Clone the repository:
 
-    Set up a virtual environment:
-    bash
-    Copy
+```bash
+git clone https://github.com/yourusername/ecommerce-api.git
+cd ecommerce-api
+```
 
-    python3 -m venv venv
-    source venv/bin/activate
+Set up a virtual environment:
 
-    Install dependencies:
-    bash
-    Copy
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
 
-    pip install -r requirements.txt
+Install dependencies:
 
-    Set up PostgreSQL:
+```bash
+pip install -r requirements.txt
+```
 
-        Create a new PostgreSQL database.
+Set up database:
 
-        Update the DATABASES setting in settings.py with your database credentials.
+    Use the sqlite3 db which already contains the test data.
+    alternative: If you don’t want to use my db.sqlite3, you can create your own db and then import the test data that i put in data.json file. use the command below to import it into your databbase.
 
-    Run migrations:
-    bash
-    Copy
+    ```bash
+    python manage.py loaddata data.json
+    ```
 
-    python manage.py migrate
+Run migrations:
 
-    Set up Redis:
+```bash
+python manage.py migrate
+```
 
-        Install Redis and start the Redis server.
+Run the development server:
 
-        Update the CACHES setting in settings.py with your Redis server details.
+```bash
+python manage.py runserver
+```
 
-    Run the development server:
-    bash
-    Copy
+Access api on [http://127.0.0.1:8000/swagger/]
 
-    python manage.py runserver
 
-Running Tests
+## Deployment to AWS Lightsail
 
-To run the unit and integration tests:
-bash
-Copy
+Create a Lightsail instance:
 
-python manage.py test
+    Log in to your AWS Lightsail account.
 
-API Documentation
+    Create a new instance using the "OS Only" option and select Ubuntu 20.04 LTS.
 
-The API is documented using Swagger/OpenAPI. To access the documentation:
+    Connect to your instance using SSH.
 
-    Run the development server.
 
-    Navigate to http://localhost:8000/swagger/ in your browser.
+Install dependencies on the instance:
 
-Deployment to AWS Lightsail
+```bash
+sudo apt-get update
+sudo apt-get install python3-pip python3-venv postgresql postgresql-contrib redis
+```
 
-    Create a Lightsail instance:
+Set up PostgreSQL:
 
-        Log in to your AWS Lightsail account.
+    Create a new PostgreSQL database and user.
 
-        Create a new instance using the "OS Only" option and select Ubuntu 20.04 LTS.
+    Update the DATABASES setting in settings.py with your database credentials.
 
-        Connect to your instance using SSH.
+Clone the repository:
 
-    Install dependencies on the instance:
-    bash
-    Copy
+```bash
+git clone https://github.com/yourusername/ecommerce-api.git
+cd ecommerce-api
+```
 
-    sudo apt-get update
-    sudo apt-get install python3-pip python3-venv postgresql postgresql-contrib redis
+Set up a virtual environment:
 
-    Set up PostgreSQL:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
 
-        Create a new PostgreSQL database and user.
+Install dependencies:
 
-        Update the DATABASES setting in settings.py with your database credentials.
+```bash
+pip install -r requirements.txt
+```
+Run migrations:
 
-    Clone the repository:
-    bash
-    Copy
+```bash
+python manage.py migrate
+```
 
-    git clone https://github.com/yourusername/ecommerce-api.git
-    cd ecommerce-api
+Set up Gunicorn:
 
-    Set up a virtual environment:
-    bash
-    Copy
+Install Gunicorn:
 
-    python3 -m venv venv
-    source venv/bin/activate
+```bash
+pip install gunicorn
+```
 
-    Install dependencies:
-    bash
-    Copy
+Create a Gunicorn service file:
 
-    pip install -r requirements.txt
+```bash
+sudo nano /etc/systemd/system/gunicorn.service
+```
 
-    Run migrations:
-    bash
-    Copy
+Add the following content:
 
-    python manage.py migrate
+    ```ini
+    [Unit]
+    Description=gunicorn daemon
+    After=network.target
 
-    Set up Gunicorn:
+    [Service]
+    User=ubuntu
+    Group=www-data
+    WorkingDirectory=/home/ubuntu/ecommerce-api
+    ExecStart=/home/ubuntu/ecommerce-api/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/ubuntu/ecommerce-api/ecommerce.sock ecommerce.wsgi:application
 
-        Install Gunicorn:
-        bash
-        Copy
+    [Install]
+    WantedBy=multi-user.target
+    ```
 
-        pip install gunicorn
+Start and enable the Gunicorn service:
 
-        Create a Gunicorn service file:
-        bash
-        Copy
+```bash
+sudo systemctl start gunicorn
+sudo systemctl enable gunicorn
+```
+Set up Nginx:
 
-        sudo nano /etc/systemd/system/gunicorn.service
+Install Nginx:
 
-        Add the following content:
-        ini
-        Copy
+```bash
+sudo apt-get install nginx
+```
 
-        [Unit]
-        Description=gunicorn daemon
-        After=network.target
+Create a new Nginx configuration file:
 
-        [Service]
-        User=ubuntu
-        Group=www-data
-        WorkingDirectory=/home/ubuntu/ecommerce-api
-        ExecStart=/home/ubuntu/ecommerce-api/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/ubuntu/ecommerce-api/ecommerce.sock ecommerce.wsgi:application
+```bash
+sudo nano /etc/nginx/sites-available/ecommerce
+```
 
-        [Install]
-        WantedBy=multi-user.target
+Add the following content:
+    nginx
 
-        Start and enable the Gunicorn service:
-        bash
-        Copy
+    server {
+        listen 80;
+        server_name your_domain_or_ip;
 
-        sudo systemctl start gunicorn
-        sudo systemctl enable gunicorn
-
-    Set up Nginx:
-
-        Install Nginx:
-        bash
-        Copy
-
-        sudo apt-get install nginx
-
-        Create a new Nginx configuration file:
-        bash
-        Copy
-
-        sudo nano /etc/nginx/sites-available/ecommerce
-
-        Add the following content:
-        nginx
-        Copy
-
-        server {
-            listen 80;
-            server_name your_domain_or_ip;
-
-            location / {
-                proxy_pass http://unix:/home/ubuntu/ecommerce-api/ecommerce.sock;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            }
+        location / {
+            proxy_pass http://unix:/home/ubuntu/ecommerce-api/ecommerce.sock;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
+    }
 
-        Enable the Nginx configuration:
-        bash
-        Copy
+Enable the Nginx configuration:
 
-        sudo ln -s /etc/nginx/sites-available/ecommerce /etc/nginx/sites-enabled/
+```bash
+sudo ln -s /etc/nginx/sites-available/ecommerce /etc/nginx/sites-enabled/
+```
+Test the Nginx configuration:
 
-        Test the Nginx configuration:
-        bash
-        Copy
+```bash
+sudo nginx -t
+```
+Restart Nginx:
 
-        sudo nginx -t
+```bash
+sudo systemctl restart nginx
+```
 
-        Restart Nginx:
-        bash
-        Copy
+Set up CI/CD:
 
-        sudo systemctl restart nginx
-
-    Set up CI/CD:
-
-        Use GitHub Actions or another CI/CD tool to automate deployments.
-
-        Create a .github/workflows/deploy.yml file with the necessary steps to deploy to your Lightsail instance.
-
-Analytics Dashboard
-
-    Install Node.js:
-    bash
-    Copy
-
-    sudo apt-get install nodejs npm
-
-    Navigate to the dashboard directory:
-    bash
-    Copy
-
-    cd analytics-dashboard
-
-    Install dependencies:
-    bash
-    Copy
-
-    npm install
-
-    Run the dashboard:
-    bash
-    Copy
-
-    npm start
-
-    Access the dashboard at http://localhost:3000.
+We can use GitHub Actions or any too like jenkins to setup CI/CD to automate the the deployments.
