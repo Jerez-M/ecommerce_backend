@@ -12,6 +12,9 @@ from .models import Product
 from .serializers import ProductSerializer, ProductUpdateSerializer, ProductRetrieveSerializer
 from rest_framework.parsers import FormParser, MultiPartParser
 from categories.models import Category
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter
+from reviews.models import Review
 
 # Create your views here.
 
@@ -85,3 +88,56 @@ class GetProductsByCategoryId(GenericAPIView):
             products = Product.objects.filter(category_id=category_id)
             serializer = ProductRetrieveSerializer(products, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProductFilterView(GenericAPIView):
+    permission_classes = []
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+
+    def get_queryset(self):
+        queryset = Product.objects.all()
+        
+        # Filter by category
+        category_id = self.request.query_params.get('category')
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+
+        # Filter by price range
+        price_min = self.request.query_params.get('price_min')
+        price_max = self.request.query_params.get('price_max')
+        if price_min:
+            queryset = queryset.filter(price__gte=price_min)
+        if price_max:
+            queryset = queryset.filter(price__lte=price_max)
+
+        # Filter by product status
+        status = self.request.query_params.get('status')
+        if status:
+            queryset = queryset.filter(status=status)
+
+        # Filter by minimum rating
+        min_rating = self.request.query_params.get('min_rating')
+        if min_rating:
+            filtered_products = []
+            for product in queryset:
+                reviews = Review.objects.filter(product=product)
+                if reviews.exists():
+                    avg_rating = sum(r.rating for r in reviews) / reviews.count()
+                    if avg_rating >= float(min_rating):
+                        filtered_products.append(product)
+            queryset = filtered_products
+
+        return queryset
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        # Apply ordering
+        ordering = request.query_params.get('ordering')
+        if ordering:
+            queryset = queryset.order_by(ordering)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

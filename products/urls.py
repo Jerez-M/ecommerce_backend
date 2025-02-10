@@ -11,12 +11,15 @@ urlpatterns = [
     path(
         "update/<int:pk>/",
         views.UpdateProductView.as_view(),
-        name="get_products",
+        name="update_products",
     ),
     path(
         "get-all/", views.GetAllProducts.as_view(), name="all_products"
     ),
     path(
         "get-by-category-id/<int:category_id>/", views.GetProductsByCategoryId.as_view(), name="a_products"
+    ),
+    path(
+        "search/", views.ProductFilterView.as_view(), name="product_search"
     ),
 ]
